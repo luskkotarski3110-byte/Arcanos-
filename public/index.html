@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#100b20"><title>Arcanos — Escola dos Oráculos</title>
+<style>
+:root{color-scheme:dark;--bg:#100b20;--panel:#1b1430;--line:#35264e;--text:#f5efff;--muted:#b8a9cb;--gold:#d9b879;--violet:#9b7bdb}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#30204b 0,#100b20 55%);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{padding:24px 18px 16px;text-align:center;border-bottom:1px solid #ffffff14}header .sigil{font-size:28px;color:var(--gold)}h1{margin:2px 0;font:500 30px Georgia,serif;letter-spacing:3px}header p{margin:4px;color:var(--muted);font-size:13px}
+main{width:min(820px,100%);margin:0 auto;padding:20px 14px 40px}.intro{padding:18px;border:1px solid var(--line);border-radius:18px;background:#1b1430c9;margin-bottom:16px}.intro h2{font:500 22px Georgia,serif;margin:0 0 6px}.intro p{margin:0;color:var(--muted);font-size:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.chips button{border:1px solid var(--line);background:#211936;color:#e9ddff;padding:9px 12px;border-radius:999px;cursor:pointer}
+.chat{display:flex;flex-direction:column;gap:12px;min-height:260px}.msg{max-width:92%;padding:13px 15px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere}.bot{background:var(--panel);border:1px solid var(--line);align-self:flex-start}.user{background:#49346c;align-self:flex-end}.composer{position:sticky;bottom:0;background:#100b20ed;padding:12px 0;display:flex;gap:8px}.composer textarea{flex:1;resize:vertical;min-height:52px;max-height:140px;background:#1b1430;border:1px solid var(--line);border-radius:14px;color:var(--text);padding:13px;font:inherit}.composer button{border:0;border-radius:14px;background:var(--gold);color:#21172b;font-weight:700;padding:0 18px;cursor:pointer}.composer button:disabled{opacity:.5}.note{text-align:center;color:var(--muted);font-size:12px;margin:4px 0 18px}.status{color:var(--muted);font-size:13px;min-height:20px}
+</style></head>
+<body>
+<header><div class="sigil">✧ ☾ ✧</div><h1>ARCANOS</h1><p>ESCOLA DOS ORÁCULOS · CONHECIMENTO E INTUIÇÃO</p></header>
+<main>
+<section class="intro"><h2>Entre no universo dos símbolos</h2><p>Aprenda sobre Tarot, Baralho Cigano, runas, I Ching e outras tradições. Faça perguntas, estude cartas e explore interpretações simbólicas.</p></section>
+<div class="chips">
+<button data-q="Quero começar a aprender Baralho Cigano do zero.">✧ Aprender Baralho Cigano</button>
+<button data-q="Me ensine os arcanos maiores do Tarot, começando pelo Louco.">☾ Estudar Tarot</button>
+<button data-q="O que são runas e qual é a história delas?">ᚱ Conhecer runas</button>
+</div>
+<section id="chat" class="chat" aria-live="polite"><div class="msg bot">Olá! Eu sou Arcanos. ✨ O que você gostaria de estudar hoje?</div></section>
+<div id="status" class="status"></div>
+<form id="form" class="composer"><textarea id="prompt" maxlength="2000" placeholder="Escreva sua pergunta..." required></textarea><button id="send" type="submit">Enviar</button></form>
+<p class="note">As leituras são simbólicas e servem para reflexão; não representam previsões garantidas.</p>
+</main>
+<script>
+const chat=document.querySelector('#chat'),form=document.querySelector('#form'),promptBox=document.querySelector('#prompt'),send=document.querySelector('#send'),statusBox=document.querySelector('#status');
+const messages=[];
+function bubble(text,who){const el=document.createElement('div');el.className='msg '+who;el.textContent=text;chat.appendChild(el);el.scrollIntoView({behavior:'smooth',block:'end'});}
+async function ask(text){if(!text.trim())return;messages.push({role:'user',text});bubble(text,'user');promptBox.value='';send.disabled=true;statusBox.textContent='Arcanos está pensando...';
+try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages})});const data=await r.json();if(!r.ok)throw new Error(data.error||'Não foi possível responder.');messages.push({role:'model',text:data.answer});bubble(data.answer,'bot');statusBox.textContent='';}
+catch(e){messages.pop();statusBox.textContent=e.message;}
+finally{send.disabled=false;promptBox.focus();}}
+form.addEventListener('submit',e=>{e.preventDefault();ask(promptBox.value);});
+document.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.q)));
+</script></body></html>
